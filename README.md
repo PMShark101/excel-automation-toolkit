@@ -2,6 +2,8 @@
 
 一个用于存放 Excel 自动化脚本与工具的仓库。每个工具放置在独立子目录中，包含执行脚本、底层 Python 脚本以及使用说明，便于后续扩展更多能力。
 
+- 🚀 **快速上手**：请阅读 [`docs/getting-started.md`](docs/getting-started.md)，了解环境安装、脚本运行以及扩展建议。
+
 ## 目录结构
 
 - `summarize/`
