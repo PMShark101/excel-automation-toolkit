@@ -1,13 +1,20 @@
-"""Simple Tkinter GUI for summarize_excels.py."""
+"""Tkinter GUI launcher for summarize_excels."""
 from __future__ import annotations
 
-import subprocess
-import sys
+import shutil
 from pathlib import Path
-from tkinter import filedialog, messagebox, simpledialog, Tk, Label, Button
+from tkinter import (
+    Button,
+    Label,
+    Tk,
+    filedialog,
+    messagebox,
+    simpledialog,
+)
+
+from . import summarize_excels as summarizer
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-PY_SCRIPT = SCRIPT_DIR / "summarize_excels.py"
 
 
 def choose_input() -> str:
@@ -39,6 +46,15 @@ def collect_detail_cells() -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
 
 
+def choose_detail_output(default_dir: Path) -> str:
+    return filedialog.asksaveasfilename(
+        title="选择抽检明细输出文件",
+        initialdir=str(default_dir),
+        defaultextension=".xlsx",
+        filetypes=[("Excel 文件", "*.xlsx"), ("CSV", "*.csv"), ("所有文件", "*.*")],
+    )
+
+
 def run_summarize() -> None:
     input_path = choose_input()
     if not input_path:
@@ -51,22 +67,33 @@ def run_summarize() -> None:
         return
 
     detail_cells = collect_detail_cells()
-
-    cmd = [sys.executable, str(PY_SCRIPT), "--input", input_path, "--output", output_path]
-    for cell in detail_cells:
-        cmd.extend(["--detail-cell", cell])
+    detail_out = ""
+    if detail_cells:
+        if messagebox.askyesno("抽检明细", "是否导出抽检明细文件？"):
+            default_dir = Path(output_path).resolve().parent
+            detail_out = choose_detail_output(default_dir)
 
     try:
-        subprocess.check_call(cmd)
-        messagebox.showinfo("成功", f"汇总完成：\n{output_path}")
-    except subprocess.CalledProcessError as exc:
+        tmp_dir, excel_files = summarizer.list_excels_from_input(input_path)
+        try:
+            detail_target = detail_out or None
+            summarizer.summarize_excels(excel_files, output_path, detail_cells, detail_target)
+        finally:
+            if tmp_dir and Path(tmp_dir).exists():
+                shutil.rmtree(tmp_dir)
+    except Exception as exc:  # noqa: BLE001
         messagebox.showerror("错误", f"执行失败：{exc}")
+        return
+
+    messagebox.showinfo("成功", f"汇总完成：\n{output_path}")
 
 
 def main() -> None:
-    if not PY_SCRIPT.exists():
-        messagebox.showerror("错误", f"未找到 {PY_SCRIPT}")
-        return
+    if not (SCRIPT_DIR / "summarize_excels.py").exists():
+        messagebox.showwarning(
+            "提示",
+            "未找到 summarize_excels.py，确保 GUI 与核心脚本位于 summarize/ 目录。",
+        )
 
     root = Tk()
     root.title("Excel Summarizer")
