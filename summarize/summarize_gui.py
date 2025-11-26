@@ -12,10 +12,14 @@ from tkinter import (
     simpledialog,
 )
 
+# Ensure we can import the summarize module even when packaged.
 try:
-    from . import summarize_excels as summarizer
-except ImportError:  # When running as standalone script
-    import summarize_excels as summarizer  # type: ignore
+    from summarize import summarize_excels as summarizer
+except ImportError:  # Running inside the package or PyInstaller
+    try:
+        from . import summarize_excels as summarizer
+    except ImportError:
+        import summarize_excels as summarizer  # type: ignore
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -92,12 +96,6 @@ def run_summarize() -> None:
 
 
 def main() -> None:
-    if not (SCRIPT_DIR / "summarize_excels.py").exists():
-        messagebox.showwarning(
-            "提示",
-            "未找到 summarize_excels.py，确保 GUI 与核心脚本位于 summarize/ 目录。",
-        )
-
     root = Tk()
     root.title("Excel Summarizer")
     root.geometry("360x200")
