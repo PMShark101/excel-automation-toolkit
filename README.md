@@ -9,6 +9,7 @@
 - `summarize/`
   - `SummarizeExcels.command`：macOS 一键脚本，支持拖拽 ZIP/文件夹或图形化选择。
   - `summarize_excels.py`：底层汇总核心逻辑，依赖 `pandas`、`openpyxl`、`numpy`。
+  - `summarize_gui.py`：基于 Tkinter 的 GUI 启动器，可在 Windows 打包成 `.exe` 与他人分享。
 
 ## 使用方法
 
