@@ -12,7 +12,10 @@ from tkinter import (
     simpledialog,
 )
 
-from . import summarize_excels as summarizer
+try:
+    from . import summarize_excels as summarizer
+except ImportError:  # When running as standalone script
+    import summarize_excels as summarizer  # type: ignore
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
